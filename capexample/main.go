@@ -8,6 +8,7 @@ package main
 import (
 	"fmt"
 	"github.com/dchest/captcha"
+	"github.com/go-redis/redis"
 	"io"
 	"log"
 	"net/http"
@@ -42,6 +43,13 @@ func processFormHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// redis store
+	s, err := captcha.NewRedisStore(&redis.Options{Addr: "localhost:6379", DB: 0}, captcha.Expiration, captcha.DefaultMaxRedisKeys, captcha.DefaultRedisPrefixKey)
+	if err != nil {
+		panic(err.Error())
+	}
+	captcha.SetCustomStore(s)
+
 	http.HandleFunc("/", showFormHandler)
 	http.HandleFunc("/process", processFormHandler)
 	http.Handle("/captcha/", captcha.Server(captcha.StdWidth, captcha.StdHeight))
