@@ -8,6 +8,7 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
+	uuid "github.com/satori/go.uuid"
 	"io"
 )
 
@@ -39,8 +40,7 @@ const (
 // Same purpose, id and digits will result in the same derived seed for this
 // instance of running application.
 //
-//   out = HMAC(rngKey, purpose || id || 0x00 || digits)  (cut to 16 bytes)
-//
+//	out = HMAC(rngKey, purpose || id || 0x00 || digits)  (cut to 16 bytes)
 func deriveSeed(purpose byte, id string, digits []byte) (out [16]byte) {
 	var buf [sha256.Size]byte
 	h := hmac.New(sha256.New, rngKey[:])
@@ -100,9 +100,12 @@ func randomBytesMod(length int, mod byte) (b []byte) {
 
 // randomId returns a new random id string.
 func randomId() string {
-	b := randomBytesMod(idLen, byte(len(idChars)))
-	for i, c := range b {
-		b[i] = idChars[c]
-	}
-	return string(b)
+	// b := randomBytesMod(idLen, byte(len(idChars)))
+	// for i, c := range b {
+	// 	b[i] = idChars[c]
+	// }
+	// return string(b)
+
+	id := uuid.NewV4()
+	return id.String()
 }

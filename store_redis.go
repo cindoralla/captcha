@@ -1,4 +1,4 @@
-// Contributed 2020 by Hari
+// Contributed 2024 by Cindoralla
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -56,7 +56,7 @@ func (s *redisStore) Set(id string, digits []byte) {
 		panic(fmt.Errorf("to many keys > %v", s.maxKeys))
 	}
 
-	id = fmt.Sprintf("%s.%s", s.prefixKey, id)
+	id = fmt.Sprintf("%s:%s", s.prefixKey, id)
 	_, err = s.redisClient.Get(id).Result()
 	if err == redis.Nil {
 		str := base64.StdEncoding.EncodeToString(digits)
