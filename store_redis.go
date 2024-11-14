@@ -65,7 +65,7 @@ func (s *redisStore) Set(id string, digits []byte) {
 }
 
 func (s *redisStore) Get(id string, clear bool) (digits []byte) {
-	id = fmt.Sprintf("%s.%s", s.prefixKey, id)
+	id = fmt.Sprintf("%s:%s", s.prefixKey, id)
 	val, err := s.redisClient.Get(id).Result()
 	if err == redis.Nil {
 		return digits
