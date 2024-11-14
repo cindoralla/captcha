@@ -72,7 +72,7 @@ func TransferStrToDigits(str string) []byte {
 }
 
 func (s *redisStore) Set(id string, digits []byte) {
-	c, err := s.redisClient.DbSize().Result()
+	c, err := s.redisClient.DBSize().Result()
 	if err != nil {
 		panic(err)
 	}
@@ -80,17 +80,21 @@ func (s *redisStore) Set(id string, digits []byte) {
 		panic(fmt.Errorf("to many keys > %v", s.maxKeys))
 	}
 
-	id = fmt.Sprintf("%s:%s", s.prefixKey, id)
-	_, err = s.redisClient.Get(id).Result()
-	if err == redis.Nil {
-		str := TransferDigitsToStr(digits)
-		s.redisClient.Set(id, str, s.expiration)
-	}
+	// id = fmt.Sprintf("%s:%s", s.prefixKey, id)
+	// _, err = s.redisClient.Get(id).Result()
+	// if err == redis.Nil {
+	// 	str := TransferDigitsToStr(digits)
+	// 	s.redisClient.Set(id, str, s.expiration)
+	// }
+
+	val := TransferDigitsToStr(digits)
+	key := fmt.Sprintf("%s:%s", s.prefixKey, id)
+	s.redisClient.Set(key, val, s.expiration)
 }
 
 func (s *redisStore) Get(id string, clear bool) (digits []byte) {
-	id = fmt.Sprintf("%s:%s", s.prefixKey, id)
-	val, err := s.redisClient.Get(id).Result()
+	key := fmt.Sprintf("%s:%s", s.prefixKey, id)
+	val, err := s.redisClient.Get(key).Result()
 	if err == redis.Nil {
 		return digits
 	}
@@ -100,7 +104,7 @@ func (s *redisStore) Get(id string, clear bool) (digits []byte) {
 
 	if clear {
 		if err != redis.Nil {
-			s.redisClient.Del(id)
+			s.redisClient.Del(key)
 		}
 	}
 	return digits
