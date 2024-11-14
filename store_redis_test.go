@@ -60,3 +60,16 @@ func BenchmarkRedisMaxKeys(b *testing.B) {
 		}
 	}
 }
+
+func TestTransferDigitsToStr(t *testing.T) {
+
+	str := "625107"
+
+	bytes := TransferStrToDigits(str)
+	newStr := TransferDigitsToStr(bytes)
+
+	if str != newStr {
+		t.Errorf("transfer byte to string failed!")
+	}
+
+}

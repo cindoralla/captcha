@@ -5,8 +5,8 @@
 package captcha
 
 import (
-	"encoding/base64"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -47,6 +47,30 @@ func NewRedisStore(redisOptions *redis.Options, expiration time.Duration, maxKey
 	return s, nil
 }
 
+// TransferDigitsToStr transfers digits' bytes to string
+func TransferDigitsToStr(digits []byte) string {
+
+	var strs []string
+
+	for _, d := range digits {
+		strs = append(strs, string(d+'0'))
+	}
+
+	return strings.Join(strs, "")
+}
+
+// TransferStrToDigits transfers string to digits' bytes
+func TransferStrToDigits(str string) []byte {
+	ns := make([]byte, len(str))
+
+	for i := range ns {
+		d := str[i]
+		ns[i] = d - '0'
+	}
+
+	return ns
+}
+
 func (s *redisStore) Set(id string, digits []byte) {
 	c, err := s.redisClient.DbSize().Result()
 	if err != nil {
@@ -59,7 +83,7 @@ func (s *redisStore) Set(id string, digits []byte) {
 	id = fmt.Sprintf("%s:%s", s.prefixKey, id)
 	_, err = s.redisClient.Get(id).Result()
 	if err == redis.Nil {
-		str := base64.StdEncoding.EncodeToString(digits)
+		str := TransferDigitsToStr(digits)
 		s.redisClient.Set(id, str, s.expiration)
 	}
 }
@@ -72,10 +96,7 @@ func (s *redisStore) Get(id string, clear bool) (digits []byte) {
 	}
 
 	// digits = []byte(val)
-	digits, err = base64.StdEncoding.DecodeString(val)
-	if err != nil {
-		return digits
-	}
+	digits = TransferStrToDigits(val)
 
 	if clear {
 		if err != redis.Nil {
